@@ -6,6 +6,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
+// ===================== Сущности =====================
 class Base {
 public:
     Base() : id_(++next_id_) {
@@ -32,23 +33,19 @@ public:
         return id_;
     }
 
-    // Невиртуальный метод: выбор реализации зависит от типа указателя/ссылки.
     void nonVirtualMethod() const {
         cout << "[CALL] Base::nonVirtualMethod id=" << id_ << endl;
     }
 
-    // Виртуальный метод: выбор реализации зависит от реального типа объекта.
     virtual void virtualMethod() const {
         cout << "[CALL] Base::virtualMethod id=" << id_ << endl;
     }
 
-    // Метод 1 вызывает метод 2 (невиртуальный): в потомке полиморфизма не будет.
     void method1CallsMethod2NonVirtual() const {
         cout << "[CALL] Base::method1CallsMethod2NonVirtual -> ";
         method2NonVirtual();
     }
 
-    // Метод 1 вызывает метод 2 (виртуальный): в потомке будет полиморфизм.
     void method1CallsMethod2Virtual() const {
         cout << "[CALL] Base::method1CallsMethod2Virtual -> ";
         method2Virtual();
@@ -132,6 +129,7 @@ void printHeader(const string& title) {
     cout << "\n========== " << title << " ==========" << endl;
 }
 
+// ===================== Демо: передача параметров =====================
 namespace ParamDemo {
 
 void func1(Base obj) {
@@ -173,6 +171,7 @@ void func3(Base& obj) {
 
 }  // namespace ParamDemo
 
+// ===================== Демо: возврат из функций =====================
 namespace ReturnDemo {
 
 Base func1() {
@@ -215,6 +214,9 @@ Base& func6() {
 
 }  // namespace ReturnDemo
 
+// ===================== Демо: умные указатели =====================
+namespace SmartPtrDemo {
+
 void takeUnique(std::unique_ptr<Base> ptr) {
     cout << "[takeUnique] got owner of id=" << (ptr ? ptr->id() : -1) << endl;
 }
@@ -235,6 +237,9 @@ std::shared_ptr<Base> makeSharedBase() {
     return ptr;
 }
 
+}  // namespace SmartPtrDemo
+
+// ===================== Сценарии демонстрации =====================
 void demoMethodHidingAndVirtual() {
     printHeader("Перекрытие и виртуальность");
 
@@ -354,25 +359,25 @@ void demoSmartPointers() {
         cout << "\n[unique_ptr локально]" << endl;
         auto u = std::make_unique<Desc>();
         cout << "owner id=" << u->id() << endl;
-        takeUnique(std::move(u));
+        SmartPtrDemo::takeUnique(std::move(u));
         cout << "after move u==nullptr -> " << (u == nullptr) << endl;
     }
 
     {
         cout << "\n[unique_ptr из функции]" << endl;
-        auto u2 = makeUniqueBase();
+        auto u2 = SmartPtrDemo::makeUniqueBase();
         cout << "returned unique_ptr id=" << u2->id() << endl;
     }
 
     {
         cout << "\n[shared_ptr]" << endl;
-        auto s1 = makeSharedBase();
+        auto s1 = SmartPtrDemo::makeSharedBase();
         cout << "after return use_count=" << s1.use_count() << endl;
 
         auto s2 = s1;
         cout << "after copy use_count=" << s1.use_count() << endl;
 
-        takeShared(s1);
+        SmartPtrDemo::takeShared(s1);
         cout << "after function use_count=" << s1.use_count() << endl;
     }
 }
